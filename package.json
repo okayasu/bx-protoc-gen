@@ -15,6 +15,7 @@
     "proto3",
     "fromObject"
   ],
+  "repository": "https://github.com/okayasu/bx-protoc-gen.git",
   "author": "okayasu",
   "license": "MIT",
   "dependencies": {
