@@ -1,0 +1,23 @@
+{
+  "name": "bx-protoc-gen",
+  "version": "0.0.1",
+  "description": "bexide protoc generator for nodejs.",
+  "main": "index.js",
+  "bin": {
+    "protoc-gen-bx": "bin/protoc-gen-bx"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "protoc",
+    "nodejs",
+    "proto3",
+    "fromObject"
+  ],
+  "author": "okayasu",
+  "license": "MIT",
+  "dependencies": {
+    "protoc-plugin": "0.0.6"
+  }
+}
