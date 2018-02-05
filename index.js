@@ -51,8 +51,13 @@ proto.${msgname}.fromObject = function(obj, msg) {
   var f;`;
         message.fieldList.forEach(function(field) {
           // console.error(field);
-          content += `
+          if (field.type == 11) {
+            content += `
+  isDef(obj.${field.jsonName}) && (f = new proto${field.typeName}()) && f.fromObject(obj.${field.jsonName}) && jspb.Message.setWrapperField(msg, ${field.number}, f);`;
+          } else {
+            content += `
   isDef(obj.${field.jsonName}) && jspb.Message.setField(msg, ${field.number}, obj.${field.jsonName});`;
+          }
         });
         content += `
  return msg;
