@@ -1,6 +1,6 @@
 {
   "name": "bx-protoc-gen",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "bexide protoc generator for nodejs.",
   "main": "index.js",
   "bin": {

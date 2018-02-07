@@ -7,6 +7,9 @@ function isDefine(a){return void 0!==a};
 
 protocPlugin(function(protos) {
   var rets = [];
+  var service_request = '';
+  var service_response = '';
+  var requires = '';
   protos.forEach(function(proto) {
     // console.error(proto);
     var content = '';
@@ -69,12 +72,48 @@ proto.${msgname}.fromObject = function(obj, msg) {
     if (isDefine(proto.serviceList)) {
       proto.serviceList.forEach(function(service) {
         // console.error(service);
+        service.methodList.forEach(function(method) {
+          var url = ('/api/' + service.name.replace(/Service$/, '') + '/' + method.name).toLowerCase();
+          url = url.replace(/\/create$/, '');
+          service_request += `
+    case '${url}': return proto${method.inputType};`;
+          service_response += `
+    case '${url}': return proto${method.outputType};`;
+        })
       });
     }
     var ret = {};
     ret.name = proto.name.replace('.proto', '_fromobject.js');
     ret.content = content;
     rets.push(ret);
+    requires += `
+require('../proto/${proto.name.replace('.proto','_pb.js')}');
+require('../proto/${proto.name.replace('.proto','_fromobject.js')}');`;
   })
+
+  var ret = {};
+  ret.name = 'services.js';
+  ret.content = `
+var protobuf = ` + requires + `
+
+module.exports = function() {
+};
+  
+module.exports.request = function(url) {
+  switch(url)
+  {` + service_request + `
+  }
+  return null;
+};
+
+module.exports.response = function(url) {
+  switch(url)
+  {` + service_response + `
+  }
+  return null;
+};
+`;
+  rets.push(ret);
+
   return rets;
 });
