@@ -9,9 +9,13 @@ protocPlugin(function(protos) {
   var rets = [];
   var service_request = '';
   var service_response = '';
+  var service_functions = '';
   var requires = '';
+  var namespace = '';
   protos.forEach(function(proto) {
     // console.error(proto);
+    if (namespace == '')
+      namespace = proto.pb_package;
     var content = '';
     content += `
 /**
@@ -79,6 +83,20 @@ proto.${msgname}.fromObject = function(obj, msg) {
     case '${url}': return proto${method.inputType};`;
           service_response += `
     case '${url}': return proto${method.outputType};`;
+          var fname = (service.name.replace(/Service$/, '') + method.name);
+          service_functions += `
+        public delegate void Def${fname}Callback(${method.outputType.replace('.'+proto.pb_package+'.', '')} response);
+        public virtual void ${fname}(${method.inputType.replace('.'+proto.pb_package+'.', '')} req, Def${fname}Callback cb)
+        {
+            StartCoroutine(Send(m_current_url + "${url}", req, delegate (byte[] buff)
+            {
+                var res = new ${method.outputType.replace('.'+proto.pb_package+'.', '')}();
+                res.MergeFrom(buff);
+                if (cb != null)
+                    cb(res);
+            }));
+        }
+`;
         })
       });
     }
@@ -112,6 +130,29 @@ module.exports.response = function(url) {
   }
   return null;
 };
+`;
+  rets.push(ret);
+
+  ret = {};
+  ret.name = 'Services.cs';
+  ret.content = `
+using UnityEngine;
+using System.Collections;
+using Google.Protobuf;
+
+namespace ${namespace.charAt(0).toUpperCase() + namespace.slice(1)}
+{
+    public abstract class Services : MonoBehaviour
+    {
+        protected static string m_current_url {get; set;}
+
+        protected delegate void DefCallback(byte[] res);
+        protected abstract IEnumerator Send(string url, IMessage req, DefCallback cb);
+
+${service_functions}
+
+    }
+}
 `;
   rets.push(ret);
 

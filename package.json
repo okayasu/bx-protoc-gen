@@ -1,7 +1,7 @@
 {
   "name": "bx-protoc-gen",
-  "version": "0.0.4",
-  "description": "bexide protoc generator for nodejs.",
+  "version": "0.0.5",
+  "description": "protoc generator adding fromObject method for nodejs. and other.",
   "main": "index.js",
   "bin": {
     "protoc-gen-bx": "bin/protoc-gen-bx"
@@ -13,7 +13,8 @@
     "protoc",
     "nodejs",
     "proto3",
-    "fromObject"
+    "fromObject",
+    "c#"
   ],
   "repository": "https://github.com/okayasu/bx-protoc-gen.git",
   "author": "okayasu",
