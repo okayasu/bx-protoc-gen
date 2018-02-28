@@ -1,6 +1,6 @@
 {
   "name": "bx-protoc-gen",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "protoc generator adding fromObject method for nodejs. and other.",
   "main": "index.js",
   "bin": {
