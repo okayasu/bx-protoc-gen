@@ -79,6 +79,9 @@ proto.${msgname}.fromObject = function(obj, msg) {
         service.methodList.forEach(function(method) {
           var url = ('/' + service.name.replace(/Service$/, '') + '/' + method.name).toLowerCase();
           url = url.replace(/\/create$/, '');
+          if (method.options && method.options.http && method.options.http.post) {
+            url = method.options.http.post;
+          }
           service_request += `
     case '${url}': return proto${method.inputType};`;
           service_response += `
