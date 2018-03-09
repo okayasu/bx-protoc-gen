@@ -5,6 +5,51 @@ const protocPlugin = require('protoc-plugin');
 
 function isDefine(a){return void 0!==a};
 
+function mk_one_message(msgname, fieldList)
+{
+  var content = `
+//if (jspb.Message.GENERATE_FROM_OBJECT) {
+/**
+ * Loads data from an object into a new instance of this proto.
+ * @param {!Object} obj The object representation of this proto to
+ *     load the data from.
+ * @return {!proto.${msgname}}
+ */
+proto.${msgname}.prototype.fromObject = function(obj) {
+  return proto.${msgname}.fromObject(obj, this);
+};
+
+/**
+ * Loads data from an object into a new instance of this proto.
+ * @param {!Object} obj The object representation of this proto to
+ *     load the data from.
+ * @return {!proto.${msgname}}
+ */
+proto.${msgname}.fromObject = function(obj, msg) {
+  var f;`;
+        fieldList.forEach(function(field) {
+//          console.error(field);
+          if (field.type == 11) {
+            if (field.label == 3) {
+              content += `
+  isArray(obj.${field.jsonName}) && jspb.Message.setRepeatedWrapperField(msg, ${field.number}, obj.${field.jsonName}.map(function(i){return (new proto${field.typeName}()).fromObject(i);}));`;
+            } else {
+              content += `
+  isDef(obj.${field.jsonName}) && (f = new proto${field.typeName}()) && f.fromObject(obj.${field.jsonName}) && jspb.Message.setWrapperField(msg, ${field.number}, f);`;
+            }
+          } else {
+            content += `
+  isDef(obj.${field.jsonName}) && jspb.Message.setField(msg, ${field.number}, obj.${field.jsonName});`;
+          }
+        });
+        content += `
+ return msg;
+};
+//}
+`;
+  return content;
+}
+
 protocPlugin(function(protos) {
   var rets = [];
   var service_request = '';
@@ -30,47 +75,18 @@ protocPlugin(function(protos) {
 var jspb = require('google-protobuf');
 
 function isDef(a){return void 0!==a};
+function isArray(a){return void 0!==a && a instanceof Array};
 
 `;
     if (isDefine(proto.messageTypeList)) {
       proto.messageTypeList.forEach(function(message) {
-        // console.error(message);
-        var msgname = proto.pb_package + '.' + message.name;
-        content += `
-//if (jspb.Message.GENERATE_FROM_OBJECT) {
-/**
- * Loads data from an object into a new instance of this proto.
- * @param {!Object} obj The object representation of this proto to
- *     load the data from.
- * @return {!proto.${msgname}}
- */
-proto.${msgname}.prototype.fromObject = function(obj) {
-  return proto.${msgname}.fromObject(obj, this);
-};
-
-/**
- * Loads data from an object into a new instance of this proto.
- * @param {!Object} obj The object representation of this proto to
- *     load the data from.
- * @return {!proto.${msgname}}
- */
-proto.${msgname}.fromObject = function(obj, msg) {
-  var f;`;
-        message.fieldList.forEach(function(field) {
-          // console.error(field);
-          if (field.type == 11) {
-            content += `
-  isDef(obj.${field.jsonName}) && (f = new proto${field.typeName}()) && f.fromObject(obj.${field.jsonName}) && jspb.Message.setWrapperField(msg, ${field.number}, f);`;
-          } else {
-            content += `
-  isDef(obj.${field.jsonName}) && jspb.Message.setField(msg, ${field.number}, obj.${field.jsonName});`;
-          }
+        message.nestedTypeList.forEach(function(nested) {
+//          console.error(nested);
+          var msgname = proto.pb_package + '.' + message.name + '.' + nested.name;
+          content += mk_one_message(msgname, nested.fieldList)
         });
-        content += `
- return msg;
-};
-//}
-`;
+        var msgname = proto.pb_package + '.' + message.name;
+        content += mk_one_message(msgname, message.fieldList);
       })
     }
     if (isDefine(proto.serviceList)) {
